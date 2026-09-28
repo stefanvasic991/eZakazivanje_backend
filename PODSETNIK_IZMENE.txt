@@ -2,59 +2,63 @@ PODSETNIK - IZMENE NAKON PREIMENOVANJA ZakaziMe -> eZakazivanje
 ================================================================
 Datum: 2026-09-28
 
-Imena projekata, namespace-ovi, .sln, .csproj i Dockerfile su vec preimenovani.
-Vrednosti ispod su spoljni identifikatori (domeni, ID-evi aplikacija, Firebase).
-Nisu menjane jer bi promena bez odgovarajuce izmene na samim servisima
-pokvarila postojecu funkcionalnost. Menjati tek kada novi servisi budu spremni.
+Imena projekata, namespace-ovi, .sln, .csproj i Dockerfile su preimenovani.
+Stavke 1-4 su 2026-09-28 promenjene i U KODU (zakazime/zakazi-me -> ezakazivanje).
+Da bi radile, treba jos da se podesi infrastruktura (domen, mobilna aplikacija, store).
 
 
-[ ] 1. JWT Issuer / Audience
-    Trenutno: https://zakazime.sliplane.app
+[~] 1. JWT Issuer / Audience
+    Bilo:   https://zakazime.sliplane.app
+    Sada:   https://ezakazivanje.sliplane.app
     Fajlovi:
       - eZakazivanje.Api/Program.cs (linije ~178, 179, 186, 187)
       - eZakazivanje.DataService/Repositories/AuthService.cs (linije ~234, 235)
-    Takodje proveriti env varijable JWT__ValidIssuer i JWT__ValidAudience na serveru.
-    Napomena: posle promene svi postojeci tokeni postaju nevazeci (korisnici
-    moraju ponovo da se uloguju). Issuer/Audience moraju biti isti na svim mestima.
+    [ ] Na serveru postaviti JWT__ValidIssuer i JWT__ValidAudience na
+        https://ezakazivanje.sliplane.app (ili ih ne postavljati - fallback je isti).
+    Napomena: tokeni izdati pod starim issuer-om vise ne vaze (korisnici
+    moraju ponovo da se uloguju).
 
     !!! BAG (potvrdjen Docker testom 2026-09-28):
     AuthService.GenerateToken() ima ZAKUCAN Issuer/Audience, a Program.cs
     validira token prema env varijablama JWT__ValidIssuer / JWT__ValidAudience.
-    Ako se na serveru postavi drugi domen, login prolazi, ali SVAKI zasticeni
-    endpoint vraca 401 ("The audience ... is invalid").
+    Ako se na serveru postavi domen razlicit od https://ezakazivanje.sliplane.app,
+    login prolazi, ali SVAKI zasticeni endpoint vraca 401 ("The audience ... is invalid").
     Resenje: AuthService treba da cita Issuer/Audience/Secret iz IOptions<JwtSettings>
     umesto zakucanih vrednosti (i umesto direktnog citanja JWT__Secret iz env-a,
     sto takodje ne radi u Development modu sa appsettings.Development.json).
 
 
-[ ] 2. Javni URL za linkove u email-ovima
-    Trenutno: https://zakazi-me.sliplane.app
+[~] 2. Javni URL za linkove u email-ovima
+    Bilo:   https://zakazi-me.sliplane.app
+    Sada:   https://ezakazivanje.sliplane.app
     Fajl:
       - eZakazivanje.DataService/Services/EmailAppUrls.cs (linija ~13, DefaultPublicBaseUrl)
-    Napomena: menjati tek kada novi domen bude aktivan.
+    [ ] Napraviti servis/domen ezakazivanje.sliplane.app na Sliplane-u
+        (dok ne postoji, linkovi iz email-ova ne rade).
 
 
-[ ] 3. Deep link sema mobilne aplikacije
-    Trenutno: zakazime://business/{businessId}
+[~] 3. Deep link sema mobilne aplikacije
+    Bilo:   zakazime://business/{businessId}
+    Sada:   ezakazivanje://business/{businessId}
     Fajl:
       - eZakazivanje.Api/Controllers/ShareController.cs (linija ~54)
-    Napomena: mora da se poklopi sa semom registrovanom u mobilnoj aplikaciji
-    (Android intent-filter / iOS URL Types). Menjati zajedno sa mobilnom aplikacijom.
+    [ ] U mobilnoj aplikaciji registrovati semu "ezakazivanje"
+        (Android intent-filter / iOS URL Types), inace share linkovi ne otvaraju app.
 
 
-[ ] 4. Play Store package ID
-    Trenutno: com.easyswitch.zakazime
+[~] 4. Play Store package ID
+    Bilo:   com.easyswitch.zakazime
+    Sada:   com.easyswitch.ezakazivanje
     Fajl:
       - eZakazivanje.Api/Controllers/ShareController.cs (linija ~55)
-    Napomena: package ID postojece aplikacije NE MOZE da se promeni. Novi ID
-    znaci novu aplikaciju na Play Store-u. Proveriti i GooglePlaySettings
-    (PackageName) u konfiguraciji, kao i Apple bundle ID u AppleSettings.
+    [ ] Objaviti aplikaciju na Play Store-u pod com.easyswitch.ezakazivanje
+        (package ID postojece aplikacije ne moze da se promeni - ovo je nova app).
+    [ ] Na serveru: GOOGLE_PLAY__PACKAGE_NAME=com.easyswitch.ezakazivanje,
+        APPLE__BUNDLE_ID = novi iOS bundle ID.
 
 
 [ ] 5. Firebase projekat
-    Trenutno: zakazi-me-6b82f
-    Fajl:
-      - eZakazivanje.Api/config/firebase-credentials.json
+    Stari projekat: zakazi-me-6b82f (kljuc premesten u ~/secrets/ZakaziMe/)
     Napomena: Firebase project ID ne moze da se preimenuje. Za novo ime treba
     napraviti novi Firebase projekat i preuzeti novi credentials fajl
     (Project settings -> Service accounts -> Generate new private key).
@@ -90,18 +94,16 @@ BEZBEDNOST - uraditi PRE prvog git commit-a
     AdminUser:Password nije podesen. Obavezno podesiti AdminUser__Password na
     serveru (ili ukloniti fallback). Admin email fallback je stefanvasic991@gmail.com.
 
-[ ] Pre prvog commit-a pokrenuti `git status` i proveriti da nijedan kljuc
+[x] Pre prvog commit-a pokrenuti `git status` i proveriti da nijedan kljuc
     nije na listi.
 
 
 ----------------------------------------------------------------
 OSTALO
 ----------------------------------------------------------------
-[ ] Build nije proveren: lokalni .NET SDK je 6.0, a projekat cilja .NET 8.
-    Instalirati .NET 8 SDK i pokrenuti: dotnet build eZakazivanje.sln
+[x] Build i pokretanje provereni u Dockeru (2026-09-28): docker build prolazi,
+    /health vraca 200, svih 9 migracija se primenjuje na praznu bazu,
+    dotnet ef: nema izmena modela bez migracije.
+    (Lokalni .NET SDK je 6.0 - za rad bez Dockera instalirati .NET 8 SDK.)
 
-[ ] Posle deploy-a proveriti da Dockerfile radi (ENTRYPOINT je sada
-    eZakazivanje.Api.dll).
-
-[ ] Pretraga za preostalim pojavljivanjima (mala slova):
-      grep -rIn -i "zakazi-\?me" .
+[x] Sva pojavljivanja zakazime / zakazi-me u kodu zamenjena sa ezakazivanje.

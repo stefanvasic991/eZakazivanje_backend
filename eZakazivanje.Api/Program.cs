@@ -175,16 +175,16 @@ if (builder.Environment.IsDevelopment())
     // Use JWT settings from appsettings.Development.json
     jwtSecret = builder.Configuration["JWT:Secret"]
         ?? throw new InvalidOperationException("JWT Secret is not configured in appsettings.Development.json");
-    jwtValidIssuer = builder.Configuration["JWT:ValidIssuer"] ?? "https://zakazime.sliplane.app";
-    jwtValidAudience = builder.Configuration["JWT:ValidAudience"] ?? "https://zakazime.sliplane.app";
+    jwtValidIssuer = builder.Configuration["JWT:ValidIssuer"] ?? "https://ezakazivanje.sliplane.app";
+    jwtValidAudience = builder.Configuration["JWT:ValidAudience"] ?? "https://ezakazivanje.sliplane.app";
 }
 else
 {
     // Use environment variables for production
     jwtSecret = Environment.GetEnvironmentVariable("JWT__Secret")
         ?? throw new InvalidOperationException("JWT Secret environment variable (JWT__Secret) is not configured");
-    jwtValidIssuer = Environment.GetEnvironmentVariable("JWT__ValidIssuer") ?? "https://zakazime.sliplane.app";
-    jwtValidAudience = Environment.GetEnvironmentVariable("JWT__ValidAudience") ?? "https://zakazime.sliplane.app";
+    jwtValidIssuer = Environment.GetEnvironmentVariable("JWT__ValidIssuer") ?? "https://ezakazivanje.sliplane.app";
+    jwtValidAudience = Environment.GetEnvironmentVariable("JWT__ValidAudience") ?? "https://ezakazivanje.sliplane.app";
 }
 
 var jwtSettings = new

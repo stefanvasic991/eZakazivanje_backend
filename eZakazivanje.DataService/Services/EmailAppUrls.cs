@@ -10,7 +10,7 @@ namespace eZakazivanje.DataService.Services;
 public static class EmailAppUrls
 {
     /// <summary>Original default from AuthService / AuthenticationController before configurable URLs.</summary>
-    private const string DefaultPublicBaseUrl = "https://zakazi-me.sliplane.app";
+    private const string DefaultPublicBaseUrl = "https://ezakazivanje.sliplane.app";
 
     public static string GetEmailLinkBaseOrigin(IConfiguration configuration, string? requestFallback = null)
     {

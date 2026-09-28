@@ -51,8 +51,8 @@ namespace eZakazivanje.Api.Controllers
     
     <script>
         // Deep link to specific business in the app
-        const businessAppUrl = 'zakazime://business/{businessId}';
-        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.easyswitch.zakazime';
+        const businessAppUrl = 'ezakazivanje://business/{businessId}';
+        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.easyswitch.ezakazivanje';
         const appStoreUrl = 'https://apps.apple.com/app/idcom.softikos.eZakazivanje';
         
         // Try to open the app with business details immediately

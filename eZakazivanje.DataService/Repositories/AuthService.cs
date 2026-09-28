@@ -231,8 +231,8 @@ public class AuthService : IAuthService
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = "https://zakazime.sliplane.app",
-            Audience = "https://zakazime.sliplane.app",
+            Issuer = "https://ezakazivanje.sliplane.app",
+            Audience = "https://ezakazivanje.sliplane.app",
             Expires = DateTime.UtcNow.AddHours(8736),
             SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256),
             Subject = new ClaimsIdentity(claims)
