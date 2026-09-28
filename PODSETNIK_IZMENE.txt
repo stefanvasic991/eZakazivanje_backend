@@ -1,0 +1,107 @@
+PODSETNIK - IZMENE NAKON PREIMENOVANJA ZakaziMe -> eZakazivanje
+================================================================
+Datum: 2026-09-28
+
+Imena projekata, namespace-ovi, .sln, .csproj i Dockerfile su vec preimenovani.
+Vrednosti ispod su spoljni identifikatori (domeni, ID-evi aplikacija, Firebase).
+Nisu menjane jer bi promena bez odgovarajuce izmene na samim servisima
+pokvarila postojecu funkcionalnost. Menjati tek kada novi servisi budu spremni.
+
+
+[ ] 1. JWT Issuer / Audience
+    Trenutno: https://zakazime.sliplane.app
+    Fajlovi:
+      - eZakazivanje.Api/Program.cs (linije ~178, 179, 186, 187)
+      - eZakazivanje.DataService/Repositories/AuthService.cs (linije ~234, 235)
+    Takodje proveriti env varijable JWT__ValidIssuer i JWT__ValidAudience na serveru.
+    Napomena: posle promene svi postojeci tokeni postaju nevazeci (korisnici
+    moraju ponovo da se uloguju). Issuer/Audience moraju biti isti na svim mestima.
+
+    !!! BAG (potvrdjen Docker testom 2026-09-28):
+    AuthService.GenerateToken() ima ZAKUCAN Issuer/Audience, a Program.cs
+    validira token prema env varijablama JWT__ValidIssuer / JWT__ValidAudience.
+    Ako se na serveru postavi drugi domen, login prolazi, ali SVAKI zasticeni
+    endpoint vraca 401 ("The audience ... is invalid").
+    Resenje: AuthService treba da cita Issuer/Audience/Secret iz IOptions<JwtSettings>
+    umesto zakucanih vrednosti (i umesto direktnog citanja JWT__Secret iz env-a,
+    sto takodje ne radi u Development modu sa appsettings.Development.json).
+
+
+[ ] 2. Javni URL za linkove u email-ovima
+    Trenutno: https://zakazi-me.sliplane.app
+    Fajl:
+      - eZakazivanje.DataService/Services/EmailAppUrls.cs (linija ~13, DefaultPublicBaseUrl)
+    Napomena: menjati tek kada novi domen bude aktivan.
+
+
+[ ] 3. Deep link sema mobilne aplikacije
+    Trenutno: zakazime://business/{businessId}
+    Fajl:
+      - eZakazivanje.Api/Controllers/ShareController.cs (linija ~54)
+    Napomena: mora da se poklopi sa semom registrovanom u mobilnoj aplikaciji
+    (Android intent-filter / iOS URL Types). Menjati zajedno sa mobilnom aplikacijom.
+
+
+[ ] 4. Play Store package ID
+    Trenutno: com.easyswitch.zakazime
+    Fajl:
+      - eZakazivanje.Api/Controllers/ShareController.cs (linija ~55)
+    Napomena: package ID postojece aplikacije NE MOZE da se promeni. Novi ID
+    znaci novu aplikaciju na Play Store-u. Proveriti i GooglePlaySettings
+    (PackageName) u konfiguraciji, kao i Apple bundle ID u AppleSettings.
+
+
+[ ] 5. Firebase projekat
+    Trenutno: zakazi-me-6b82f
+    Fajl:
+      - eZakazivanje.Api/config/firebase-credentials.json
+    Napomena: Firebase project ID ne moze da se preimenuje. Za novo ime treba
+    napraviti novi Firebase projekat i preuzeti novi credentials fajl
+    (Project settings -> Service accounts -> Generate new private key).
+    Mobilne aplikacije onda treba povezati na novi projekat (google-services.json /
+    GoogleService-Info.plist).
+
+
+----------------------------------------------------------------
+BEZBEDNOST - uraditi PRE prvog git commit-a
+----------------------------------------------------------------
+[x] firebase-credentials.json (ZakaziMe kljuc) je PREMESTEN van projekta:
+      ~/secrets/ZakaziMe/firebase-credentials.json
+    Folder eZakazivanje.Api/config/ je uklonjen (na produkciji se fajl pravi
+    sam iz env varijable FIREBASE_CREDENTIALS).
+    Za eZakazivanje napraviti NOVI Firebase projekat i novi kljuc (tacka 5).
+
+[x] .gitignore napravljen - iskljucuje bin/obj, .DS_Store, appsettings.Development.json,
+    .env, config/, *.p8, *.pem, *.key, firebase/service-account json fajlove.
+
+[x] appsettings*.json ne postoje u projektu. Baza, JWT, OAuth, SMTP,
+    Google Play i Apple kljucevi se citaju iz env varijabli / config-a.
+
+[ ] Za lokalni razvoj napraviti eZakazivanje.Api/appsettings.Development.json
+    (ignorisan je od strane git-a) sa: ConnectionStrings:DefaultConnection,
+    JWT:Secret, Firebase:Credentials (putanja do NOVOG kljuca), itd.
+
+[ ] Na serveru za eZakazivanje postaviti NOVE vrednosti env varijabli -
+    NE koristiti iste tajne kao ZakaziMe:
+      JWT__Secret, POSTGRES_*, FIREBASE_CREDENTIALS, OAUTH__*,
+      Email__* (SMTP lozinka), GOOGLE_PLAY__*, Apple kljuc (.p8)
+
+[ ] Program.cs (~linija 720): podrazumevana admin lozinka "Admin123!" ako
+    AdminUser:Password nije podesen. Obavezno podesiti AdminUser__Password na
+    serveru (ili ukloniti fallback). Admin email fallback je stefanvasic991@gmail.com.
+
+[ ] Pre prvog commit-a pokrenuti `git status` i proveriti da nijedan kljuc
+    nije na listi.
+
+
+----------------------------------------------------------------
+OSTALO
+----------------------------------------------------------------
+[ ] Build nije proveren: lokalni .NET SDK je 6.0, a projekat cilja .NET 8.
+    Instalirati .NET 8 SDK i pokrenuti: dotnet build eZakazivanje.sln
+
+[ ] Posle deploy-a proveriti da Dockerfile radi (ENTRYPOINT je sada
+    eZakazivanje.Api.dll).
+
+[ ] Pretraga za preostalim pojavljivanjima (mala slova):
+      grep -rIn -i "zakazi-\?me" .

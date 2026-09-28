@@ -1,0 +1,34 @@
+# Build
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Tajne / kljucevi - NIKAD ne commit-ovati
+appsettings.Development.json
+appsettings.*.local.json
+.env
+.env.*
+**/config/
+*.p8
+*.p12
+*.pfx
+*.pem
+*.key
+*firebase*credentials*.json
+*service-account*.json
+google-services.json
+GoogleService-Info.plist
